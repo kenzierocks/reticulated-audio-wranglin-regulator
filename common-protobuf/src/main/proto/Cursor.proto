@@ -1,0 +1,22 @@
+syntax = "proto3";
+option java_package = "net.octyl.rawr.gen.protos";
+option java_multiple_files = true;
+
+import "BasicTypes.proto";
+
+/*
+ * Argument to RPC calls for cursor support.
+ */
+message RawrCursorRequest {
+    uint32 size = 1;
+    // The cursor ID. Included to continue a previous cursor request.
+    ProtoUuid id = 2;
+}
+
+// A page from a cursor. Empty content signals end-of-cursor.
+message ProtoCursorPage {
+    // The cursor ID. Allows for efficient pagination.
+    ProtoUuid id = 1;
+    // The page contents. Protobuf-encoded messages.
+    repeated bytes content = 2;
+}

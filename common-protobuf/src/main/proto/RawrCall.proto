@@ -1,0 +1,10 @@
+syntax = "proto3";
+option java_package = "net.octyl.rawr.gen.protos";
+option java_multiple_files = true;
+
+import "google/protobuf/any.proto";
+
+message RawrCall {
+    string functionCode = 1;
+    repeated bytes arguments = 2;
+}

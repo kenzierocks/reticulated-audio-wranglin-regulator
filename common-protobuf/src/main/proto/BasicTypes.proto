@@ -1,0 +1,47 @@
+syntax = "proto3";
+option java_package = "net.octyl.rawr.gen.protos";
+option java_multiple_files = true;
+
+message ProtoUuid {
+    fixed64 lo = 1;
+    fixed64 hi = 2;
+}
+
+message ProtoUuidList {
+    repeated ProtoUuid ids = 1;
+}
+
+message Tag {
+    ProtoUuid id = 1;
+    oneof tag_type {
+        // Text data, e.g. artists, albums
+        string string_data = 2;
+        // Numerical data, e.g. play counter
+        int64 number_data = 3;
+        // Duration data, e.g. song length
+        uint64 duration_data = 4;
+        // Time data, e.g. composition date
+        uint64 date_time_data = 5;
+        // Image data, e.g. album artwork
+        bytes image_data = 6;
+    }
+}
+
+message TagList {
+    repeated Tag tags = 2;
+}
+
+message Song {
+    ProtoUuid id = 1;
+    repeated Tag tags = 2;
+}
+
+message SongList {
+    repeated Song songs = 1;
+}
+
+message Playlist {
+    ProtoUuid id = 1;
+    string name = 2;
+    SongList songs = 3;
+}
