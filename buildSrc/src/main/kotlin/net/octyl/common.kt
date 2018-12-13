@@ -76,12 +76,11 @@ private fun Project.kotlinAndroidSetup() {
     }
 
     configure<AppExtension> {
-        compileSdkVersion(26)
-        buildToolsVersion("28.0.3")
+        compileSdkVersion(28)
         defaultConfig {
             it.applicationId = "net.octyl.rawr"
             it.minSdkVersion(24)
-            it.targetSdkVersion(26)
+            it.targetSdkVersion(28)
         }
 
         buildTypes {
@@ -98,16 +97,6 @@ private fun Project.kotlinAndroidSetup() {
                 it.java.srcDirs(file("src/main/kotlin"))
             }
         }
-    }
-
-    dependencies {
-        val supportLibVersion = "26.1.0"
-        "implementation"(group = "com.android.support", name = "appcompat-v7", version = supportLibVersion)
-        "implementation"(group = "com.android.support", name = "support-core-utils", version = supportLibVersion)
-        "implementation"(group = "com.android.support", name = "support-annotations", version = supportLibVersion)
-        "implementation"(group = "com.android.support", name = "design", version = supportLibVersion)
-        "implementation"(group = "com.android.support", name = "cardview-v7", version = supportLibVersion)
-        "implementation"(group = "com.android.support.constraint", name = "constraint-layout", version = "1.1.3")
     }
 }
 

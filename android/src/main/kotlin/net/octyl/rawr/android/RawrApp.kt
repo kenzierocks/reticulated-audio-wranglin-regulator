@@ -6,6 +6,7 @@ import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
+import net.octyl.rawr.android.frags.PlaylistFragment
 
 class RawrApp : AppCompatActivity() {
 
@@ -35,6 +36,13 @@ class RawrApp : AppCompatActivity() {
         return when (item.itemId) {
             android.R.id.home -> {
                 drawerLayout.openDrawer(GravityCompat.START)
+                true
+            }
+            R.id.tracks -> {
+                val frag = PlaylistFragment()
+                val opensaction = supportFragmentManager.beginTransaction()
+                opensaction.add(R.id.main_frag_container, frag)
+                opensaction.commit()
                 true
             }
             else -> super.onOptionsItemSelected(item)

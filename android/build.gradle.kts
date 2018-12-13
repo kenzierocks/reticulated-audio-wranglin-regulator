@@ -22,6 +22,15 @@ dependencies {
     "implementation"(appKotlin("stdlib-jdk8"))
     "implementation"(appKotlin("reflect"))
 
+    val supportLibVersion = "26.1.0"
+    "implementation"(group = "com.android.support", name = "appcompat-v7", version = supportLibVersion)
+    "implementation"(group = "com.android.support", name = "support-core-utils", version = supportLibVersion)
+    "implementation"(group = "com.android.support", name = "support-annotations", version = supportLibVersion)
+    "implementation"(group = "com.android.support", name = "design", version = supportLibVersion)
+    "implementation"(group = "com.android.support", name = "cardview-v7", version = supportLibVersion)
+    "implementation"(group = "com.android.support", name = "recyclerview-v7", version = supportLibVersion)
+    "implementation"(group = "com.android.support.constraint", name = "constraint-layout", version = "1.1.3")
+
     commonLib(group = "com.google.dagger", nameBase = "dagger", version = "2.19") {
         "api"(lib())
         "kapt"(lib("compiler"))

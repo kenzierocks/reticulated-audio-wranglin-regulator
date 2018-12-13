@@ -25,7 +25,7 @@ repositories {
 val appKotlin = "1.3.10"
 dependencies {
     compile(group = "gradle.plugin.com.techshroom", name = "incise-blue", version = "0.2.1")
-    compile(group = "com.android.tools.build", name = "gradle", version = "3.4.0-alpha07")
+    compile(group = "com.android.tools.build", name = "gradle", version = "3.4.0-alpha08")
             .apply {
                 // This pulls in 1.3 variants we can't take.
                 exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
