@@ -2,7 +2,6 @@ rootProject.name = "reticulated-audio-wranglin-regulator"
 
 include(":common-protobuf")
 include(":common")
-include(":android")
 include(":server")
 
 pluginManagement {

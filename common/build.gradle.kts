@@ -1,19 +1,14 @@
 import com.techshroom.inciseblue.InciseBlueExtension
-import com.techshroom.inciseblue.InciseBluePlugin
-import com.techshroom.inciseblue.commonLib
-import net.octyl.addCommonRepositories
-import net.octyl.appKotlin
-import net.octyl.jvmSetup
+import com.techshroom.inciseblue.invoke
 import net.octyl.JvmKind
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
-import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
-import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
-import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
-import org.jetbrains.kotlin.js.translate.context.Namer.kotlin
-import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+import net.octyl.appKotlin
+import net.octyl.aptCreator
+import net.octyl.dagger
+import net.octyl.guava
+import net.octyl.jsr305Plus
+import net.octyl.jvmSetup
+import net.octyl.kotlinCoroutines
+import net.octyl.slf4j
 
 plugins {
     `java-library`
@@ -25,25 +20,21 @@ dependencies {
     "api"(project(":common-protobuf"))
     "api"(appKotlin("stdlib-jdk8"))
     "implementation"(appKotlin("reflect"))
+    "implementation"(appKotlin("compiler"))
+    "implementation"(appKotlin("annotation-processing-gradle"))
 
-    "api"(group = "org.slf4j", name = "slf4j-api", version = "1.7.25")
+    "api"(slf4j())
 
-    "compileOnly"(group = "com.techshroom", name = "jsr305-plus", version = "0.0.1")
+    "compileOnly"(jsr305Plus())
 
-    "api"(group = "com.google.guava", name = "guava", version = "27.0-jre")
+    "api"(guava())
 
-    commonLib(group = "org.jetbrains.kotlinx", nameBase = "kotlinx-coroutines", version = "1.0.1") {
-        "api"(lib("core"))
-        "api"(lib("guava"))
-    }
+    "api"(kotlinCoroutines("core"))
+    "api"(kotlinCoroutines("guava"))
 
-    commonLib(group = "com.google.dagger", nameBase = "dagger", version = "2.19") {
-        "api"(lib())
-        "kapt"(lib("compiler"))
-    }
+    "api"(dagger())
+    "kapt"(dagger("compiler"))
 
-    commonLib(group = "net.octyl.apt-creator", nameBase = "apt-creator", version = "0.1.1") {
-        "api"(lib("annotations"))
-        "kapt"(lib("processor"))
-    }
+    "api"(aptCreator("annotations"))
+    "kapt"(aptCreator("processor"))
 }

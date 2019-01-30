@@ -14,15 +14,19 @@ message ProtoUuidList {
 message Tag {
     ProtoUuid id = 1;
     oneof tag_type {
-        // Text data, e.g. artists, albums
+        // Text data, e.g. artists, albums.
         string string_data = 2;
-        // Numerical data, e.g. play counter
+        // Numerical data, e.g. play counter.
         int64 number_data = 3;
-        // Duration data, e.g. song length
-        uint64 duration_data = 4;
-        // Time data, e.g. composition date
-        uint64 date_time_data = 5;
-        // Image data, e.g. album artwork
+        /* Duration data, e.g. song length.
+         * In milliseconds.
+         */
+        int64 duration_data = 4;
+        /* Time data, e.g. composition date.
+         * Milliseconds since UNIX epoch.
+         */
+        int64 date_time_data = 5;
+        // Image data, e.g. album artwork.
         bytes image_data = 6;
     }
 }

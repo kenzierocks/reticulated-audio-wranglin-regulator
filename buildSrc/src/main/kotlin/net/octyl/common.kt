@@ -1,18 +1,20 @@
 package net.octyl
 
-import com.android.build.gradle.AppExtension
-import com.android.build.gradle.internal.dsl.BuildType
 import com.techshroom.inciseblue.InciseBlueExtension
 import net.minecrell.gradle.licenser.LicenseExtension
 import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.*
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.kotlin.dsl.DependencyHandlerScope
+import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 
 val Project.KOTLIN_VERSION: String
-    get() = "1.3.10"
+    get() = "1.3.20"
 
 // Kotlin dependency for the actual code, vs the Gradle scripts
 fun Project.appKotlin(name: String): String =
@@ -23,8 +25,7 @@ private fun kotlin(name: String) = "org.jetbrains.kotlin.$name"
 enum class JvmKind(val wantsKotlin: Boolean,
                    val wantsJavaPlugin: Boolean) {
     PLAIN(false, true),
-    KOTLIN(true, false),
-    KOTLIN_ANDROID(true, false);
+    KOTLIN(true, false);
 }
 
 fun Project.jvmSetup(jvmKind: JvmKind, javaVersion: JavaVersion) {
@@ -41,61 +42,18 @@ fun Project.jvmSetup(jvmKind: JvmKind, javaVersion: JavaVersion) {
         license()
     }
 
-    configure<LicenseExtension>() {
-        include("**/*.kt")
-    }
-
     addCommonRepositories()
 
     when (jvmKind) {
-        JvmKind.KOTLIN_ANDROID -> kotlinAndroidSetup()
         JvmKind.KOTLIN -> kotlinJvmPlainSetup()
         else -> {
         }
     }
     if (jvmKind.wantsKotlin) {
         apply(plugin = kotlin("kapt"))
-        tasks.withType<KotlinJvmCompile> {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-        }
         configure<KaptExtension> {
             correctErrorTypes = true
-        }
-    }
-}
-
-private fun Project.kotlinAndroidSetup() {
-    apply(plugin = "com.android.application")
-    apply(plugin = kotlin("android"))
-    apply(plugin = "kotlin-android-extensions")
-
-    repositories {
-        google()
-    }
-
-    configure<AppExtension> {
-        compileSdkVersion(28)
-        defaultConfig {
-            it.applicationId = "net.octyl.rawr"
-            it.minSdkVersion(24)
-            it.targetSdkVersion(28)
-        }
-
-        buildTypes {
-            it.named("release").configure { release ->
-                release.isMinifyEnabled = false
-                release.proguardFiles(
-                        getDefaultProguardFile("proguard-android.txt"),
-                        "proguard-rules.txt")
-            }
-        }
-
-        sourceSets {
-            it.named("main").configure {
-                it.java.srcDirs(file("src/main/kotlin"))
-            }
+            includeCompileClasspath = false
         }
     }
 }

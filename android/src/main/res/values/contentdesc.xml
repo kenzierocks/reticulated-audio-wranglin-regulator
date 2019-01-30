@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="tracks_btn">Tracks</string>
-    <string name="playlists_btn">Playlists</string>
-    <string name="settings_btn">Settings</string>
-</resources>
