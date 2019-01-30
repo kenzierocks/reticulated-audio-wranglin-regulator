@@ -1,4 +1,3 @@
-import com.techshroom.inciseblue.InciseBlueExtension
 import com.techshroom.inciseblue.invoke
 import net.octyl.JvmKind
 import net.octyl.appKotlin
