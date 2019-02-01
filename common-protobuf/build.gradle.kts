@@ -1,6 +1,7 @@
 import com.google.protobuf.gradle.ExecutableLocator
 import com.google.protobuf.gradle.ProtobufConfigurator
 import com.google.protobuf.gradle.ProtobufConvention
+import com.techshroom.inciseblue.InciseBlueExtension
 import com.techshroom.inciseblue.invoke
 import net.octyl.JvmKind
 import net.octyl.jvmSetup
@@ -11,7 +12,7 @@ plugins {
     `java-library`
 }
 
-jvmSetup(JvmKind.PLAIN, JavaVersion.VERSION_1_8)
+jvmSetup(JvmKind.PLAIN, JavaVersion.VERSION_1_8, true)
 
 val protobufVersion = protobuf().version!!
 dependencies {
@@ -60,4 +61,11 @@ tasks.withType<JavaCompile>().named("compileJava").configure {
 plugins.withType<IdeaPlugin>().configureEach {
     val pbuf = convention.getPlugin<ProtobufConvention>()
     model.module.generatedSourceDirs.add(file("${pbuf.protobuf.generatedFilesBaseDir}/main/java"))
+}
+
+configure<InciseBlueExtension> {
+    maven {
+        projectDescription = "RAWR Music Player common protobuf library."
+        coords("kenzierocks", "reticulated-audio-wranglin-regulator")
+    }
 }

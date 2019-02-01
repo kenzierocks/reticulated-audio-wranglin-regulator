@@ -1,3 +1,4 @@
+import com.techshroom.inciseblue.InciseBlueExtension
 import com.techshroom.inciseblue.invoke
 import net.octyl.JvmKind
 import net.octyl.appKotlin
@@ -13,14 +14,12 @@ plugins {
     `java-library`
 }
 
-jvmSetup(JvmKind.KOTLIN, JavaVersion.VERSION_1_8)
+jvmSetup(JvmKind.KOTLIN, JavaVersion.VERSION_1_8, true)
 
 dependencies {
     "api"(project(":common-protobuf"))
     "api"(appKotlin("stdlib-jdk8"))
     "implementation"(appKotlin("reflect"))
-    "implementation"(appKotlin("compiler"))
-    "implementation"(appKotlin("annotation-processing-gradle"))
 
     "api"(slf4j())
 
@@ -36,4 +35,11 @@ dependencies {
 
     "api"(aptCreator("annotations"))
     "kapt"(aptCreator("processor"))
+}
+
+configure<InciseBlueExtension> {
+    maven {
+        projectDescription = "RAWR Music Player common library."
+        coords("kenzierocks", "reticulated-audio-wranglin-regulator")
+    }
 }

@@ -2,6 +2,7 @@ package net.octyl
 
 import com.techshroom.inciseblue.InciseBlueExtension
 import net.minecrell.gradle.licenser.LicenseExtension
+import net.researchgate.release.ReleasePlugin
 import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -28,10 +29,13 @@ enum class JvmKind(val wantsKotlin: Boolean,
     KOTLIN(true, false);
 }
 
-fun Project.jvmSetup(jvmKind: JvmKind, javaVersion: JavaVersion) {
+fun Project.jvmSetup(jvmKind: JvmKind, javaVersion: JavaVersion, releasePlugin: Boolean = false) {
     apply(plugin = "com.techshroom.incise-blue")
     if (jvmKind.wantsJavaPlugin) {
         apply(plugin = "java")
+    }
+    if (releasePlugin) {
+        apply(plugin = "net.researchgate.release")
     }
 
     configure<InciseBlueExtension> {
