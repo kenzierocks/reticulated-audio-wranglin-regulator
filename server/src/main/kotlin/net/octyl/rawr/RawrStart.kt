@@ -25,7 +25,7 @@
 
 package net.octyl.rawr
 
-fun main(vararg args: String) {
+fun main() {
     val component = DaggerRawrGlobalComponent.builder()
             .build()
 

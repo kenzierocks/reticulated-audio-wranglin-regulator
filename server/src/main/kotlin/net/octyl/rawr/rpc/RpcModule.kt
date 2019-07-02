@@ -27,7 +27,6 @@ package net.octyl.rawr.rpc
 
 import dagger.Binds
 import dagger.Module
-import net.octyl.rawr.rpc.RawrService
 import javax.inject.Singleton
 
 @Module

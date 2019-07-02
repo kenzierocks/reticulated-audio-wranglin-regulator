@@ -1,24 +1,18 @@
 package net.octyl
 
 import com.techshroom.inciseblue.InciseBlueExtension
-import net.minecrell.gradle.licenser.LicenseExtension
-import net.researchgate.release.ReleasePlugin
 import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 
-val Project.KOTLIN_VERSION: String
+val KOTLIN_VERSION: String
     get() = "1.3.40"
 
 // Kotlin dependency for the actual code, vs the Gradle scripts
-fun Project.appKotlin(name: String): String =
+fun appKotlin(name: String): String =
         "org.jetbrains.kotlin:kotlin-$name:$KOTLIN_VERSION"
 
 private fun kotlin(name: String) = "org.jetbrains.kotlin.$name"

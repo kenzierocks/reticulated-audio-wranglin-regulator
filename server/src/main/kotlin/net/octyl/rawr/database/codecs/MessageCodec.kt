@@ -74,7 +74,7 @@ sealed class MessageCodec(
 
     override fun encode(writer: BsonWriter, value: Message, encoderContext: EncoderContext) {
         writer.writeMapLike(encoderContext) { cb ->
-            value.allFields.forEach { k, v ->
+            value.allFields.forEach { (k, v) ->
                 if (k.hasDefaultValue() && k.defaultValue === v) {
                     // no need to serialize this one
                     return@forEach
@@ -88,7 +88,7 @@ sealed class MessageCodec(
         when (v) {
             is Iterable<*> -> writeIterable(v, encoderContext)
             is Map<*, *> -> writeMapLike(encoderContext) { cb ->
-                v.forEach { any, u ->
+                v.forEach { (any, u) ->
                     cb(any.toString(), u)
                 }
             }

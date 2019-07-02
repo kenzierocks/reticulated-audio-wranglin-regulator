@@ -25,6 +25,7 @@
 
 package net.octyl.rawr.rpc
 
+import net.octyl.rawr.gen.protos.RawrCall
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 
