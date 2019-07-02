@@ -20,11 +20,11 @@ repositories {
     }
 }
 
-val appKotlin = "1.3.20"
+val appKotlin = "1.3.40"
 dependencies {
-    compile(group = "gradle.plugin.com.techshroom", name = "incise-blue", version = "0.3.13")
+    compile(group = "gradle.plugin.com.techshroom", name = "incise-blue", version = "0.3.14")
     compile(group = "gradle.plugin.net.minecrell", name = "licenser", version = "0.4.1")
-    compile(group = "net.researchgate", name = "gradle-release", version = "2.8.0")
+    compile(group = "net.researchgate", name = "gradle-release", version = "2.8.1")
     compile(gradleKotlinDsl())
     compile(kotlin("stdlib-jdk8"))
     compile(kotlin("reflect"))

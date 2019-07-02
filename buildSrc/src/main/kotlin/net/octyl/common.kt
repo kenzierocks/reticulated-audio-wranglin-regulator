@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 import org.jetbrains.kotlin.gradle.plugin.KaptExtension
 
 val Project.KOTLIN_VERSION: String
-    get() = "1.3.20"
+    get() = "1.3.40"
 
 // Kotlin dependency for the actual code, vs the Gradle scripts
 fun Project.appKotlin(name: String): String =

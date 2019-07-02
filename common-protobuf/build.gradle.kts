@@ -8,7 +8,7 @@ import net.octyl.jvmSetup
 import net.octyl.protobuf
 
 plugins {
-    id("com.google.protobuf") version "0.8.8"
+    id("com.google.protobuf") version "0.8.9"
     `java-library`
 }
 
