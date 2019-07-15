@@ -28,6 +28,9 @@ package net.octyl.rawr.inject
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
@@ -42,12 +45,18 @@ class CoroutineModule {
      */
     private object RawrRpcCoroutineScope : CoroutineScope {
         override val coroutineContext: CoroutineContext = Executors.newFixedThreadPool(
-                Runtime.getRuntime().availableProcessors(),
-                ThreadFactoryBuilder()
-                        .setNameFormat("rawr-rpc-handler-%d")
-                        .setDaemon(false)
-                        .build()
-        ).asCoroutineDispatcher()
+            Runtime.getRuntime().availableProcessors(),
+            ThreadFactoryBuilder()
+                .setNameFormat("rawr-rpc-handler-%d")
+                .setDaemon(false)
+                .build()
+        ).asCoroutineDispatcher() +
+            CoroutineName("RawrRpc") +
+            CoroutineExceptionHandler { _, t ->
+                if (t !is CancellationException) {
+                    t.printStackTrace()
+                }
+            }
     }
 
     @Provides
