@@ -20,7 +20,7 @@ repositories {
     }
 }
 
-val appKotlin = "1.3.40"
+val appKotlin = "1.3.41"
 dependencies {
     compile(group = "gradle.plugin.com.techshroom", name = "incise-blue", version = "0.3.14")
     compile(group = "gradle.plugin.net.minecrell", name = "licenser", version = "0.4.1")
