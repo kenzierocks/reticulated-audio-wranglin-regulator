@@ -25,9 +25,21 @@
 
 package net.octyl.rawr
 
+import mu.KotlinLogging
+import kotlin.system.exitProcess
+
+private val logger = KotlinLogging.logger("Startup")
+
 fun main() {
-    val component = DaggerRawrGlobalComponent.builder()
+    try {
+        logger.debug("Building RAWR component graph")
+        val component = DaggerRawrGlobalComponent.builder()
             .build()
 
-    component.server.start()
+        logger.info("Starting RAWR Server")
+        component.server.start()
+    } catch (e: Throwable) {
+        logger.error("Fatal error in RAWR", e)
+        exitProcess(1)
+    }
 }

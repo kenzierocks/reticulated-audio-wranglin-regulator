@@ -27,14 +27,18 @@ package net.octyl.rawr.net
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.EventLoopGroup
+import mu.KotlinLogging
 
 class RawrServer(
         private val serverBootstrap: ServerBootstrap,
         private val bossGroup: EventLoopGroup,
         private val workerGroup: EventLoopGroup
 ) {
+    private val logger = KotlinLogging.logger { }
+
     fun start() {
         try {
+            logger.info("Server binding to: ${serverBootstrap.config().localAddress()}")
             serverBootstrap.bind().sync().channel().closeFuture().sync()
         } finally {
             bossGroup.shutdownGracefully()

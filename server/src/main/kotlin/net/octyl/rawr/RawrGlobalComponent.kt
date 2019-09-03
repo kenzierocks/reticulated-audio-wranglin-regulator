@@ -28,6 +28,7 @@ package net.octyl.rawr
 import dagger.Component
 import net.octyl.rawr.database.DatabaseBindsModule
 import net.octyl.rawr.database.DatabaseModule
+import net.octyl.rawr.inject.ConfigModule
 import net.octyl.rawr.inject.CoroutineModule
 import net.octyl.rawr.inject.EnvironmentModule
 import net.octyl.rawr.net.NettyModule
@@ -38,6 +39,7 @@ import javax.inject.Singleton
 
 @Component(modules = [
     EnvironmentModule::class,
+    ConfigModule::class,
     CoroutineModule::class,
     DatabaseModule::class,
     DatabaseBindsModule::class,

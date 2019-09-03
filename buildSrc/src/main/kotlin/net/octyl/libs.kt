@@ -22,7 +22,7 @@ val Project.kotlinIo
 val Project.kotlinCoroutines
     get() = commonLib(group = "org.jetbrains.kotlinx", nameBase = "kotlinx-coroutines", version = "1.2.2")
 val Project.netty
-    get() = commonLib(group = "io.netty", nameBase = "netty-all", version = "4.1.37.Final")
+    get() = commonLib(group = "io.netty", nameBase = "netty-all", version = "4.1.39.Final")
 val Project.mongodbDriverReactiveStreams
     get() = commonLib(group = "org.mongodb", nameBase = "mongodb-driver-reactivestreams", version = "1.11.0")
 val Project.protobuf
