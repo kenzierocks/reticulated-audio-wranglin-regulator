@@ -32,10 +32,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import javax.inject.Singleton
-import kotlin.coroutines.CoroutineContext
 
 @Module
 class CoroutineModule {
@@ -43,8 +43,8 @@ class CoroutineModule {
     /**
      * Coroutine scope for executing RPC calls.
      */
-    private object RawrRpcCoroutineScope : CoroutineScope {
-        override val coroutineContext: CoroutineContext = Executors.newFixedThreadPool(
+    private object RawrRpcCoroutineScope : CoroutineScope by CoroutineScope(
+        Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors(),
             ThreadFactoryBuilder()
                 .setNameFormat("rawr-rpc-handler-%d")
@@ -56,12 +56,11 @@ class CoroutineModule {
                 if (t !is CancellationException) {
                     t.printStackTrace()
                 }
-            }
-    }
+            } +
+            SupervisorJob()
+    )
 
-    @Provides
-    @Singleton
-    @RPC
+    @[Provides Singleton RPC]
     fun provideRpcCoroutineScope(): CoroutineScope = RawrRpcCoroutineScope
 
 }

@@ -33,6 +33,7 @@ import net.octyl.rawr.inject.EnvironmentModule
 import net.octyl.rawr.net.NettyModule
 import net.octyl.rawr.net.RawrServer
 import net.octyl.rawr.rpc.RpcModule
+import net.octyl.rawr.s3.S3Module
 import javax.inject.Singleton
 
 @Component(modules = [
@@ -41,7 +42,8 @@ import javax.inject.Singleton
     DatabaseModule::class,
     DatabaseBindsModule::class,
     NettyModule::class,
-    RpcModule::class
+    RpcModule::class,
+    S3Module::class
 ])
 @Singleton
 interface RawrGlobalComponent {

@@ -25,13 +25,17 @@
 
 package net.octyl.rawr.inject
 
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider
 import com.google.common.base.Strings
 import dagger.Module
 import dagger.Provides
+import net.octyl.rawr.s3.RawrS3Storage
 import java.net.InetSocketAddress
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
+import javax.inject.Singleton
 
 private fun requireEnv(name: String): String {
     return env(name) ?: throw IllegalStateException("Missing required environment variable: `$name`")
@@ -61,12 +65,37 @@ data class RawrHost(val host: String, val port: Int) {
 
 @Module
 class EnvironmentModule {
-    private val databasePath = Paths.get(env("RAWR_DATABASE_PATH") ?: "./rawr-db/")
-    private val debugEnabled = env("ENVIRONMENT") == "DEV"
+
+    @get:[Provides Singleton DatabasePath]
+    val databasePath = Path.of(env("RAWR_DATABASE_PATH") ?: "./rawr-db/")!!
+
+    @get:[Provides Singleton DebugEnabled]
+    val debugEnabled = env("ENVIRONMENT") == "DEV"
+
     private val ipAddress = prop("net.octyl.rawr.ip") ?: "localhost"
     private val port = portValue("net.octyl.rawr.port") ?: 7027
+    @[Provides Singleton]
+    fun provideRawrHost() = RawrHost(ipAddress, port)
+
     private val mongoHost = prop("net.octyl.rawr.mongodb.ip") ?: "localhost"
     private val mongoPort = portValue("net.octyl.rawr.mongodb.port") ?: 27017
+    @[Provides Singleton Mongo]
+    fun provideMongoRawrHost() = RawrHost(mongoHost, mongoPort)
+
+    private val s3Bucket = prop("net.octyl.rawr.s3.bucket")
+        .takeUnless { it.isNullOrBlank() }
+        .let { requireNotNull(it) { "No S3 bucket" } }
+    private val s3Folder = prop("net.octyl.rawr.s3.folder")
+        .takeUnless { it.isNullOrBlank() }
+        .let { requireNotNull(it) { "No S3 folder" } }
+
+    @[Provides Singleton]
+    fun provideS3Storage() = RawrS3Storage(s3Bucket, s3Folder)
+
+    @get:[Provides Singleton]
+    val awsCredentials: AWSCredentialsProvider = AWSStaticCredentialsProvider(
+        EnvironmentVariableCredentialsProvider().credentials
+    )
 
     init {
         if (Files.notExists(databasePath)) {
@@ -74,20 +103,4 @@ class EnvironmentModule {
         }
     }
 
-    @Provides
-    @DatabasePath
-    fun provideDatabasePath(): Path {
-        return databasePath
-    }
-
-    @Provides
-    @DebugEnabled
-    fun provideDebugEnabled() = debugEnabled
-
-    @Provides
-    fun provideRawrHost() = RawrHost(ipAddress, port)
-
-    @Provides
-    @Mongo
-    fun provideMongoRawrHost() = RawrHost(mongoHost, mongoPort)
 }

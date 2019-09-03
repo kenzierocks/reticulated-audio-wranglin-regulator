@@ -27,6 +27,7 @@ package net.octyl.rawr.rpc
 
 import com.google.protobuf.ByteString
 import com.google.protobuf.MessageLite
+import mu.KotlinLogging
 import net.octyl.rawr.gen.protos.RawrCall
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -34,6 +35,8 @@ import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberFunctions
+
+private val logger = KotlinLogging.logger { }
 
 /**
  * Metadata for translating [RawrCall].
@@ -54,7 +57,9 @@ private class ArgumentTranslator(
 private val rawrServiceCalls: Map<String, RawrCallMetadata> = RawrService::class.memberFunctions
         .filter { func -> func.annotations.any { it is RawrCallMarker } }
         .associate { func ->
-            getRawrCallCode(func) to rawrCallMetadata(func)
+            val rawrCallCode = getRawrCallCode(func)
+            logger.info { "Associating RawrCall $func with $rawrCallCode" }
+            rawrCallCode to rawrCallMetadata(func)
         }
 
 /**

@@ -63,7 +63,7 @@ class CursorTrackerImpl @Inject constructor() : CursorTracker {
         val cursorWeakRef = WeakReference(cursors)
         expireFuture = cursorExpiryPool.schedule({
             cursorWeakRef.get()?.remove(id)
-        }, 10L, TimeUnit.MINUTES)
+        }, 1L, TimeUnit.MINUTES)
     }
 
     private val cursorExpiryPool = Executors.newSingleThreadScheduledExecutor(
@@ -87,9 +87,12 @@ class CursorTrackerImpl @Inject constructor() : CursorTracker {
         // this should be good, unless someone mixes IDs, but then the 500 is their fault :)
         @Suppress("UNCHECKED_CAST")
         val iterator = cursor.channel.iterator() as ChannelIterator<T>
-        val results = ArrayList<T>(cursorRequest.size)
-        while (results.size < cursorRequest.size && iterator.hasNext()) {
+        val results = ArrayList<T>(cursorRequest.maxSize)
+        while (results.size < cursorRequest.maxSize && iterator.hasNext()) {
             results.add(iterator.next())
+        }
+        if (!iterator.hasNext()) {
+            cursors.remove(cursorRequest.id)
         }
         return RawrCursorPage(cursorRequest.id, results)
     }

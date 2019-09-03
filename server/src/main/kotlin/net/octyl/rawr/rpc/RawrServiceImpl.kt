@@ -25,21 +25,72 @@
 
 package net.octyl.rawr.rpc
 
+import com.amazonaws.services.s3.model.ObjectMetadata
+import com.google.protobuf.ByteString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import net.octyl.rawr.database.cursor.CursorTracker
+import kotlinx.coroutines.withContext
 import net.octyl.rawr.database.Database
+import net.octyl.rawr.database.cursor.CursorTracker
 import net.octyl.rawr.database.cursor.autoAddCursor
+import net.octyl.rawr.gen.protos.DownloadPacket
+import net.octyl.rawr.gen.protos.DownloadRequest
+import net.octyl.rawr.gen.protos.ProtoUuid
 import net.octyl.rawr.gen.protos.ProtoUuidList
 import net.octyl.rawr.gen.protos.RawrCursorRequest
 import net.octyl.rawr.gen.protos.Song
 import net.octyl.rawr.gen.protos.TagList
+import net.octyl.rawr.gen.protos.UploadPacket
+import net.octyl.rawr.s3.RawrS3Storage
+import net.octyl.rawr.s3.S3Files
 import javax.inject.Inject
 
 @UseExperimental(ExperimentalCoroutinesApi::class)
 class RawrServiceImpl @Inject constructor(
-        private val database: Database,
-        private val cursorTracker: CursorTracker
+    private val database: Database,
+    private val cursorTracker: CursorTracker,
+    private val s3Files: S3Files,
+    private val s3Storage: RawrS3Storage
 ) : RawrService {
+
+    override suspend fun startUpload(): String {
+        return withContext(Dispatchers.IO) {
+            s3Files.startUpload(s3Storage.bucket, s3Storage.folder, ObjectMetadata())
+        }
+    }
+
+    override suspend fun cancelUpload(uploadId: String) {
+        withContext(Dispatchers.IO) {
+            s3Files.getUpload(uploadId)?.abort()
+        }
+    }
+
+    override suspend fun upload(packet: UploadPacket) {
+        withContext(Dispatchers.IO) {
+            s3Files.requireUpload(packet.id).upload(packet.content.toByteArray())
+        }
+    }
+
+    override suspend fun finishUpload(uploadId: String): ProtoUuid {
+        return withContext(Dispatchers.IO) {s3Files.requireUpload(uploadId).finish()}
+    }
+
+    override suspend fun read(request: DownloadRequest): DownloadPacket {
+        return withContext(Dispatchers.IO) {
+            DownloadPacket.newBuilder()
+                .setContent(ByteString.copyFrom(s3Files.read(
+                    s3Storage.bucket, s3Storage.folder,
+                    request.id, request.offset, request.size.toLong()
+                )))
+                .build()
+        }
+    }
+
+    override suspend fun delete(file: ProtoUuid) {
+        withContext(Dispatchers.IO) {
+            s3Files.delete(s3Storage.bucket, s3Storage.folder, file)
+        }
+    }
 
     override suspend fun addSong(song: Song) {
         database.addSong(song)

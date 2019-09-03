@@ -1,0 +1,31 @@
+syntax = "proto3";
+option java_package = "net.octyl.rawr.gen.protos";
+option java_multiple_files = true;
+
+import "BasicTypes.proto";
+
+message StartUpload {
+    // Size of the new file.
+    int64 size = 1;
+}
+
+message UploadPacket {
+    // ID of the upload to continue.
+    string id = 1;
+    // Content to upload.
+    bytes content = 2;
+}
+
+message DownloadPacket {
+    // Content from download.
+    bytes content = 1;
+}
+
+message DownloadRequest {
+    // ID of the file to read.
+    ProtoUuid id = 1;
+    // Offset into the file.
+    int64 offset = 2;
+    // Amount to read.
+    int32 size = 3;
+}
