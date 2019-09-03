@@ -40,6 +40,7 @@ import net.octyl.rawr.gen.protos.ProtoUuidList
 import net.octyl.rawr.gen.protos.RawrCursorRequest
 import net.octyl.rawr.gen.protos.Song
 import net.octyl.rawr.gen.protos.TagList
+import net.octyl.rawr.gen.protos.UploadId
 import net.octyl.rawr.gen.protos.UploadPacket
 import net.octyl.rawr.s3.RawrS3Storage
 import net.octyl.rawr.s3.S3Files
@@ -53,26 +54,30 @@ class RawrServiceImpl @Inject constructor(
     private val s3Storage: RawrS3Storage
 ) : RawrService {
 
-    override suspend fun startUpload(): String {
-        return withContext(Dispatchers.IO) {
-            s3Files.startUpload(s3Storage.bucket, s3Storage.folder, ObjectMetadata())
-        }
+    override suspend fun startUpload(): UploadId {
+        return UploadId.newBuilder()
+            .setId(withContext(Dispatchers.IO) {
+                s3Files.startUpload(s3Storage.bucket, s3Storage.folder, ObjectMetadata())
+            })
+            .build()
     }
 
-    override suspend fun cancelUpload(uploadId: String) {
+    override suspend fun cancelUpload(request: UploadId) {
         withContext(Dispatchers.IO) {
-            s3Files.getUpload(uploadId)?.abort()
+            s3Files.getUpload(request.id)?.abort()
         }
     }
 
     override suspend fun upload(packet: UploadPacket) {
         withContext(Dispatchers.IO) {
-            s3Files.requireUpload(packet.id).upload(packet.content.toByteArray())
+            s3Files.requireUpload(packet.id.id).upload(packet.content.toByteArray())
         }
     }
 
-    override suspend fun finishUpload(uploadId: String): ProtoUuid {
-        return withContext(Dispatchers.IO) {s3Files.requireUpload(uploadId).finish()}
+    override suspend fun finishUpload(request: UploadId): ProtoUuid {
+        return withContext(Dispatchers.IO) {
+            s3Files.requireUpload(request.id).finish()
+        }
     }
 
     override suspend fun read(request: DownloadRequest): DownloadPacket {

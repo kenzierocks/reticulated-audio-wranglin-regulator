@@ -28,12 +28,13 @@ package net.octyl.rawr.rpc
 import net.octyl.rawr.gen.protos.RawrCall
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
+import kotlin.reflect.full.valueParameters
 
 /**
  * Helper for getting the [RawrCall] code from a method.
  */
 fun getRawrCallCode(callable: KCallable<*>): String {
-    return callable.name + callable.parameters
-            .mapNotNull { param -> (param.type.classifier as? KClass<*>)?.qualifiedName }
-            .joinToString(",")
+    return callable.name + callable.valueParameters
+        .mapNotNull { param -> (param.type.classifier as? KClass<*>)?.qualifiedName }
+        .joinToString(",", prefix = "(", postfix = ")") { it.substringAfter("net.octyl.rawr.") }
 }

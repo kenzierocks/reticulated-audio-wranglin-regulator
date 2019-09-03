@@ -4,14 +4,14 @@ option java_multiple_files = true;
 
 import "BasicTypes.proto";
 
-message StartUpload {
-    // Size of the new file.
-    int64 size = 1;
+message UploadId {
+    // The upload ID.
+    string id = 1;
 }
 
 message UploadPacket {
     // ID of the upload to continue.
-    string id = 1;
+    UploadId id = 1;
     // Content to upload.
     bytes content = 2;
 }

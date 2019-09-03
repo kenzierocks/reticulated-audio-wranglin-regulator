@@ -3,6 +3,7 @@ package net.octyl.rawr.rpc
 import net.octyl.rawr.gen.protos.DownloadPacket
 import net.octyl.rawr.gen.protos.DownloadRequest
 import net.octyl.rawr.gen.protos.ProtoUuid
+import net.octyl.rawr.gen.protos.UploadId
 import net.octyl.rawr.gen.protos.UploadPacket
 
 
@@ -17,13 +18,13 @@ interface SongDataCalls {
      * @return an ID for uploading data via [upload]
      */
     @RawrCallMarker
-    suspend fun startUpload(): String
+    suspend fun startUpload(): UploadId
 
     /**
      * Cancel a song upload.
      */
     @RawrCallMarker
-    suspend fun cancelUpload(uploadId: String)
+    suspend fun cancelUpload(request: UploadId)
 
     /**
      * Upload song data.
@@ -37,7 +38,7 @@ interface SongDataCalls {
      * @return the ID for the new file
      */
     @RawrCallMarker
-    suspend fun finishUpload(uploadId: String): ProtoUuid
+    suspend fun finishUpload(request: UploadId): ProtoUuid
 
     /**
      * Read from a song file.

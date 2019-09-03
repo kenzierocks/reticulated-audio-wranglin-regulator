@@ -33,8 +33,8 @@ import net.octyl.aptcreator.GenerateCreator
 import net.octyl.aptcreator.Provided
 import net.octyl.rawr.gen.protos.RawrCall
 import net.octyl.rawr.inject.RPC
+import net.octyl.rawr.rpc.RawrCallTranslator
 import net.octyl.rawr.rpc.RawrService
-import net.octyl.rawr.rpc.call
 
 @GenerateCreator
 class RawrRpcHandler constructor(
@@ -45,7 +45,8 @@ class RawrRpcHandler constructor(
         // launch 100% async -- no need to hold threads in netty, we'll call it
         // from the app threads and that's 100% safe!
         appCoroutineScope.launch {
-            rawrService.call(context)
+            val response = with(RawrCallTranslator) { rawrService.call(context) }
+            ctx.writeAndFlush(response)
         }
     }
 }

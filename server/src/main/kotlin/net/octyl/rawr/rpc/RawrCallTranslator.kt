@@ -35,6 +35,7 @@ import kotlin.reflect.full.callSuspend
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.valueParameters
 
 private val logger = KotlinLogging.logger { }
 
@@ -42,8 +43,8 @@ private val logger = KotlinLogging.logger { }
  * Metadata for translating [RawrCall].
  */
 private data class RawrCallMetadata(
-        val function: KFunction<MessageLite>,
-        val argumentTranslators: List<ArgumentTranslator>
+    val function: KFunction<Any?>,
+    val argumentTranslators: List<ArgumentTranslator>
 )
 
 private class ArgumentTranslator(
@@ -54,52 +55,71 @@ private class ArgumentTranslator(
     }
 }
 
-private val rawrServiceCalls: Map<String, RawrCallMetadata> = RawrService::class.memberFunctions
+object RawrCallTranslator {
+    private val rawrServiceCalls: Map<String, RawrCallMetadata> = RawrService::class.memberFunctions
         .filter { func -> func.annotations.any { it is RawrCallMarker } }
         .associate { func ->
             val rawrCallCode = getRawrCallCode(func)
-            logger.info { "Associating RawrCall $func with $rawrCallCode" }
+            logger.debug { "Associating RawrCall $func with $rawrCallCode" }
             rawrCallCode to rawrCallMetadata(func)
         }
 
-/**
- * Translates a RawrCall into an actual call.
- */
-suspend fun RawrService.call(rawrCall: RawrCall): MessageLite {
-    val (code, args) = rawrCall.functionCode to rawrCall.argumentsList
-    val handle = rawrServiceCalls[code]
+    fun initialize() {
+        // does nothing, implicitly loads `rawrServiceCalls`
+    }
+
+    /**
+     * Translates a RawrCall into an actual call.
+     */
+    suspend fun RawrService.call(rawrCall: RawrCall): MessageLite? {
+        val (code, args) = rawrCall.functionCode to rawrCall.argumentsList
+        val handle = rawrServiceCalls[code]
             ?: throw IllegalStateException("Invalid RPC call `$code`")
 
-    val argArray = Array(args.size + 1) { i ->
-        @Suppress("IMPLICIT_CAST_TO_ANY")
-        when (i) {
-            0 -> this
-            else -> handle.argumentTranslators[i - 1].translate(args[i - 1])
+        val argArray = Array(args.size + 1) { i ->
+            @Suppress("IMPLICIT_CAST_TO_ANY")
+            when (i) {
+                0 -> this
+                else -> handle.argumentTranslators[i - 1].translate(args[i - 1])
+            }
+        }
+        return when (val message = handle.function.callSuspend(*argArray)) {
+            is MessageLite -> message
+            is RawrCursorPage<*> -> message.toProto()
+            null -> null
+            else -> {
+                logger.warn { "Non-MessageLite response from ${handle.function}" }
+                null
+            }
         }
     }
-    return handle.function.callSuspend(*argArray)
-}
 
-private fun rawrCallMetadata(func: KFunction<*>): RawrCallMetadata {
-    val returnType = (func.returnType.classifier as KClass<*>)
-    if (!returnType.isSubclassOf(MessageLite::class)) {
-        throw IllegalStateException("RawrCallMarker function does not return MessageLite")
+    private fun isOkReturnType(returnType: KClass<*>): Boolean {
+        return returnType == Unit::class || returnType.isSubclassOf(MessageLite::class) ||
+            returnType.isSubclassOf(RawrCursorPage::class)
     }
-    val allParamsValid = func.parameters
+
+    private fun rawrCallMetadata(func: KFunction<*>): RawrCallMetadata {
+        val returnType = (func.returnType.classifier as KClass<*>)
+        check(isOkReturnType(returnType)) {
+            "RawrCallMarker function `$func` does not return MessageLite, RawrCursorPage or Unit"
+        }
+        val allParamsValid = func.valueParameters
             .map { it.type.classifier as? KClass<*> }
             .all { it != null && it.isSubclassOf(MessageLite::class) }
-    if (!allParamsValid) {
-        throw IllegalStateException("RawrCallMarker function does not take all MessageLite parameters")
-    }
-    // checked right above :)
-    @Suppress("UNCHECKED_CAST")
-    val castFunc = func as KFunction<MessageLite>
-    return RawrCallMetadata(castFunc, func.parameters.map { param ->
-        val messageType = (param.type.classifier as KClass<*>)
-        val instance = messageType.declaredFunctions.single {
-            it.parameters.isEmpty() && it.name == "getDefaultInstance"
-        }.call() as MessageLite
+        check(allParamsValid) {
+            "RawrCallMarker function `$func` does not take all MessageLite parameters"
+        }
+        // checked right above :)
+        @Suppress("UNCHECKED_CAST")
+        val castFunc = func as KFunction<Any?>
+        return RawrCallMetadata(castFunc, func.valueParameters.map { param ->
+            val messageType = (param.type.classifier as KClass<*>)
+            val instance = messageType.declaredFunctions.single {
+                it.parameters.isEmpty() && it.name == "getDefaultInstance"
+            }.call() as MessageLite
 
-        ArgumentTranslator(instance)
-    })
+            ArgumentTranslator(instance)
+        })
+    }
 }

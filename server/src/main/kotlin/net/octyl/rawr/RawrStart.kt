@@ -26,15 +26,20 @@
 package net.octyl.rawr
 
 import mu.KotlinLogging
+import net.octyl.rawr.rpc.RawrCallTranslator
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger("Startup")
 
 fun main() {
     try {
-        logger.debug("Building RAWR component graph")
+        logger.info("Building RAWR component graph")
         val component = DaggerRawrGlobalComponent.builder()
             .build()
+
+        // Eagerly initialize call mappings
+        logger.info("Initializing RAWR RPC")
+        RawrCallTranslator.initialize()
 
         logger.info("Starting RAWR Server")
         component.server.start()
