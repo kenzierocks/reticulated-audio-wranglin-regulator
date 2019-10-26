@@ -40,6 +40,6 @@ dependencies {
 configure<InciseBlueExtension> {
     maven {
         projectDescription = "RAWR Music Player common library."
-        coords("kenzierocks", "reticulated-audio-wranglin-regulator")
+        coords("octylFractal", "reticulated-audio-wranglin-regulator")
     }
 }

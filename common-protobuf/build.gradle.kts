@@ -66,6 +66,6 @@ plugins.withType<IdeaPlugin>().configureEach {
 configure<InciseBlueExtension> {
     maven {
         projectDescription = "RAWR Music Player common protobuf library."
-        coords("kenzierocks", "reticulated-audio-wranglin-regulator")
+        coords("octylFractal", "reticulated-audio-wranglin-regulator")
     }
 }
