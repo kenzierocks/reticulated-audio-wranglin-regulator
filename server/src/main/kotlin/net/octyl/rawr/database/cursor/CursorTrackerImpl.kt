@@ -27,13 +27,19 @@ package net.octyl.rawr.database.cursor
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.google.protobuf.MessageLite
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.ChannelIterator
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.produceIn
 import net.octyl.rawr.gen.protos.ProtoUuid
 import net.octyl.rawr.gen.protos.RawrCursorRequest
 import net.octyl.rawr.rpc.RawrCursorPage
 import net.octyl.rawr.rpc.toProtobuf
-import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -43,8 +49,8 @@ import javax.inject.Inject
 class CursorTrackerImpl @Inject constructor() : CursorTracker {
 
     private class CursorData(
-            val id: ProtoUuid,
-            val channel: ReceiveChannel<*>
+        val id: ProtoUuid,
+        val channel: ReceiveChannel<*>
     ) {
         var expireFuture: ScheduledFuture<*>? = null
     }
@@ -58,24 +64,31 @@ class CursorTrackerImpl @Inject constructor() : CursorTracker {
             }
             expireFuture = null
         }
-        // prevent circular references, we don't need to clear this
-        // if it's already getting GC'd
-        val cursorWeakRef = WeakReference(cursors)
-        expireFuture = cursorExpiryPool.schedule({
-            cursorWeakRef.get()?.remove(id)
+        expireFuture = cursorExecutor.schedule({
+            removeCursor(this)
         }, 1L, TimeUnit.MINUTES)
     }
 
-    private val cursorExpiryPool = Executors.newSingleThreadScheduledExecutor(
+    private val cursorExecutor = Executors.newSingleThreadScheduledExecutor(
             ThreadFactoryBuilder()
                     .setDaemon(true)
-                    .setNameFormat("cursor-tracker-expiry-thread-%d")
+                .setNameFormat("cursor-tracker-%d")
                     .build()
     )
+    private val coroutineScope = CoroutineScope(cursorExecutor.asCoroutineDispatcher() +
+        CoroutineName("cursor-tracker"))
     private val cursors = mutableMapOf<ProtoUuid, CursorData>()
 
-    override suspend fun <T : MessageLite> addCursor(cursorChannel: ReceiveChannel<T>): ProtoUuid {
+    private fun removeCursor(cursorData: CursorData) {
+        cursors.remove(cursorData.id)
+        cursorData.channel.cancel(CancellationException("Cursor removed"))
+    }
+
+    @UseExperimental(FlowPreview::class)
+    override suspend fun <T : MessageLite> addCursor(flow: Flow<T>): ProtoUuid {
         val uuid = UUID.randomUUID().toProtobuf()
+        // copy the flow to a (limited) channel
+        val cursorChannel = flow.produceIn(coroutineScope)
         cursors[uuid] = CursorData(uuid, cursorChannel)
         return uuid
     }
@@ -96,4 +109,11 @@ class CursorTrackerImpl @Inject constructor() : CursorTracker {
         }
         return RawrCursorPage(cursorRequest.id, results)
     }
+
+    override fun close() {
+        cursorExecutor.shutdown()
+        val cursorList = cursors.values.toList()
+        cursorList.forEach { removeCursor(it) }
+    }
+
 }

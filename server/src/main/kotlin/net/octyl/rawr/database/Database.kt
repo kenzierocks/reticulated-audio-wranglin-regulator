@@ -25,7 +25,7 @@
 
 package net.octyl.rawr.database
 
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
 import net.octyl.rawr.gen.protos.ProtoUuid
 import net.octyl.rawr.gen.protos.Song
 import net.octyl.rawr.gen.protos.Tag
@@ -37,8 +37,8 @@ interface Database {
      */
     suspend fun addSong(song: Song)
 
-    suspend fun getSongs(ids: List<ProtoUuid>): ReceiveChannel<Song>
+    suspend fun getSongs(ids: List<ProtoUuid>): Flow<Song>
 
-    suspend fun findTaggedSongs(tags: List<Tag>): ReceiveChannel<Song>
+    suspend fun findTaggedSongs(tags: List<Tag>): Flow<Song>
 
 }

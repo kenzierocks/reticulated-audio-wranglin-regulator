@@ -32,6 +32,8 @@ import com.mongodb.client.model.Filters.gte
 import com.mongodb.reactivestreams.client.MongoCollection
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.openSubscription
 import net.octyl.rawr.gen.protos.ProtoUuid
@@ -56,16 +58,16 @@ class MongoDbDatabase @Inject constructor(
         }
     }
 
-    override suspend fun getSongs(ids: List<ProtoUuid>): ReceiveChannel<Song> {
+    override suspend fun getSongs(ids: List<ProtoUuid>): Flow<Song> {
         if (ids.isEmpty()) {
-            return songCollection.find().openSubscription()
+            return songCollection.find().asFlow()
         }
         return songCollection
                 .find(`in`("id", ids))
-                .openSubscription()
+                .asFlow()
     }
 
-    override suspend fun findTaggedSongs(tags: List<Tag>): ReceiveChannel<Song> {
+    override suspend fun findTaggedSongs(tags: List<Tag>): Flow<Song> {
         return songCollection
                 .find(all(
                         "tags",
@@ -73,6 +75,6 @@ class MongoDbDatabase @Inject constructor(
                             Document("\$elemMatch", it)
                         }
                 ))
-                .openSubscription()
+                .asFlow()
     }
 }

@@ -26,7 +26,7 @@
 package net.octyl.rawr.database.cursor
 
 import com.google.protobuf.MessageLite
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
 import net.octyl.rawr.gen.protos.ProtoUuid
 import net.octyl.rawr.gen.protos.RawrCursorRequest
 import net.octyl.rawr.rpc.RawrCursorPage
@@ -34,12 +34,12 @@ import net.octyl.rawr.rpc.RawrCursorPage
 /**
  * Helper interface for housekeeping of cursor execution.
  */
-interface CursorTracker {
+interface CursorTracker : AutoCloseable {
 
     /**
      * Add a cursor call to be tracked.
      */
-    suspend fun <T : MessageLite> addCursor(cursorChannel: ReceiveChannel<T>): ProtoUuid
+    suspend fun <T : MessageLite> addCursor(flow: Flow<T>): ProtoUuid
 
     /**
      * Get the next page for the given cursor.
@@ -49,22 +49,22 @@ interface CursorTracker {
 }
 
 suspend inline fun <T : MessageLite> CursorTracker.autoAddCursor(
-        cursorRequest: RawrCursorRequest,
-        channelProvider: () -> ReceiveChannel<T>
+    cursorRequest: RawrCursorRequest,
+    flowProvider: () -> Flow<T>
 ): RawrCursorPage<T> {
     val request = when {
         cursorRequest.hasId() -> cursorRequest
-        else -> addCursorToRequest(cursorRequest, channelProvider())
+        else -> addCursorToRequest(cursorRequest, flowProvider())
     }
 
     return onCursorRequest(request)
 }
 
 suspend inline fun <T : MessageLite> CursorTracker.addCursorToRequest(
-        cursorRequest: RawrCursorRequest,
-        channelProvider: ReceiveChannel<T>
+    cursorRequest: RawrCursorRequest,
+    flow: Flow<T>
 ): RawrCursorRequest {
-    val cursorUuid = addCursor(channelProvider)
+    val cursorUuid = addCursor(flow)
 
     return cursorRequest.toBuilder()
             .setId(cursorUuid)

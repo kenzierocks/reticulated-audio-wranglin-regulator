@@ -3,6 +3,7 @@ rootProject.name = "reticulated-audio-wranglin-regulator"
 include(":common-protobuf")
 include(":common")
 include(":server")
+include(":client")
 
 pluginManagement {
     repositories {

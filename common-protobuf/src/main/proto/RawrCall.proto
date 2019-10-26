@@ -8,3 +8,8 @@ message RawrCall {
     string functionCode = 1;
     repeated bytes arguments = 2;
 }
+
+message RawrException {
+    string incidentId = 1;
+    string message = 2;
+}

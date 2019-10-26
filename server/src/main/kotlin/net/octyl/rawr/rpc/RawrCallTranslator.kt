@@ -29,6 +29,8 @@ import com.google.protobuf.ByteString
 import com.google.protobuf.MessageLite
 import mu.KotlinLogging
 import net.octyl.rawr.gen.protos.RawrCall
+import net.octyl.rawr.gen.protos.RawrException
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.callSuspend
@@ -83,6 +85,19 @@ object RawrCallTranslator {
                 else -> handle.argumentTranslators[i - 1].translate(args[i - 1])
             }
         }
+        return try {
+            callFunction(handle, argArray)
+        } catch (e: Exception) {
+            val incidentId = UUID.randomUUID().toString()
+            logger.warn(e) { "Exception occurred in RPC, incidentId=$incidentId" }
+            RawrException.newBuilder()
+                .setIncidentId(incidentId)
+                .setMessage(e.message ?: e.javaClass.name)
+                .build()
+        }
+    }
+
+    private suspend fun callFunction(handle: RawrCallMetadata, argArray: Array<Any>): MessageLite? {
         return when (val message = handle.function.callSuspend(*argArray)) {
             is MessageLite -> message
             is RawrCursorPage<*> -> message.toProto()
